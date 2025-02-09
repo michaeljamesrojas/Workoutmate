@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workoutmate</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="/static/styles/main.css" />
   </head>
   <body>
     <div class="container">
       <h1>Workoutmate</h1>
       <div id="initialButtons" class="buttons">
-        <button onclick="app.createWorkout()">Create Workout Session</button>
-        <button onclick="app.showJoinSection()">Join Workout Session</button>
+        <button onclick="app.createMeeting()">Create Meeting</button>
+        <button onclick="app.showJoinSection()">Join Meeting</button>
       </div>
       <div id="joinSection">
-        <input type="text" id="sessionCode" placeholder="Enter session code" />
-        <button onclick="app.joinSession()">Join</button>
+        <input type="text" id="meetingCode" placeholder="Enter meeting code" />
+        <button onclick="app.joinMeeting()">Join</button>
       </div>
       <div id="sessionControls">
         <button
@@ -41,6 +41,6 @@
       <div id="message" class="message" style="display: none"></div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="/static/app.js"></script>
   </body>
 </html>

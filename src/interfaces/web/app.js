@@ -1,5 +1,5 @@
-import WebRTCService from './services/webrtc.service.js';
-import MeetingService from './services/meeting.service.js';
+import WebRTCService from '/static/services/webrtc.service.js';
+import MeetingService from '/static/services/meeting.service.js';
 
 class App {
     constructor() {

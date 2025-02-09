@@ -27,10 +27,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Middleware
+// Basic middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(session({
@@ -60,29 +59,51 @@ app.use(passportSession);
 // Initialize WebSocket service
 new WebSocketService(io, meetingService);
 
-// Setup routes
-app.use('/api', createMeetingRoutes(meetingService));
+// Serve public assets (images, css, etc.)
+app.use('/assets', express.static(path.join(__dirname, 'public')));
+
+// Auth routes (must be before protected routes)
 app.use('/auth', createAuthRoutes(authService, authProvider));
 
-// Protected route example
+// Protected API routes
+app.use('/api', ensureAuth, createMeetingRoutes(meetingService));
+
+// Protected routes
 app.get('/dashboard', ensureAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'interfaces/web/dashboard.html'));
 });
 
-// Serve the main page
+app.get('/meeting', ensureAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'interfaces/web/index.html'));
+});
+
+// Public routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    if (req.isAuthenticated()) {
+        res.redirect('/dashboard');
+    } else {
+        res.redirect('/login');
+    }
 });
 
-// Login page route
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    if (req.isAuthenticated()) {
+        res.redirect('/dashboard');
+    } else {
+        res.sendFile(path.join(__dirname, 'interfaces/web/login.html'));
+    }
 });
 
-// Signup page route
 app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+    if (req.isAuthenticated()) {
+        res.redirect('/dashboard');
+    } else {
+        res.sendFile(path.join(__dirname, 'interfaces/web/signup.html'));
+    }
 });
+
+// Protected interface assets (js, services, etc.)
+app.use('/static', ensureAuth, express.static(path.join(__dirname, 'interfaces/web')));
 
 // Start server
 const port = process.env.PORT || 3000;
