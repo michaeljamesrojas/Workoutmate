@@ -2,6 +2,7 @@ class WebRTCService {
     constructor(socket) {
         this.socket = socket;
         this.peers = {};
+        this.peerVideoElements = {};
         this.localStream = null;
     }
 
@@ -34,8 +35,31 @@ class WebRTCService {
             }
         };
 
+        peerConnection.ontrack = event => {
+            if (!this.peerVideoElements[userId]) {
+                const videoElement = this.createVideoElement(event.streams[0], false);
+                this.peerVideoElements[userId] = videoElement;
+                document.getElementById('videoGrid').appendChild(videoElement);
+            }
+        };
+
         this.peers[userId] = peerConnection;
         return peerConnection;
+    }
+
+    createVideoElement(stream, isLocal) {
+        const container = document.createElement('div');
+        container.className = 'video-container';
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        if (isLocal) {
+            video.muted = true;
+        }
+        
+        container.appendChild(video);
+        return container;
     }
 
     async connectToNewUser(userId) {
@@ -56,7 +80,9 @@ class WebRTCService {
     }
 
     async handleAnswer(answer, senderId) {
-        await this.peers[senderId].setRemoteDescription(answer);
+        if (this.peers[senderId]) {
+            await this.peers[senderId].setRemoteDescription(answer);
+        }
     }
 
     async handleIceCandidate(candidate, senderId) {
@@ -69,6 +95,14 @@ class WebRTCService {
         if (this.peers[userId]) {
             this.peers[userId].close();
             delete this.peers[userId];
+        }
+        
+        if (this.peerVideoElements[userId]) {
+            const videoElement = this.peerVideoElements[userId];
+            if (videoElement.parentNode) {
+                videoElement.parentNode.removeChild(videoElement);
+            }
+            delete this.peerVideoElements[userId];
         }
     }
 

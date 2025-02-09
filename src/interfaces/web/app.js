@@ -11,11 +11,7 @@ class App {
 
     setupSocketHandlers() {
         this.socket.on('user-connected', async (userId) => {
-            const peerConnection = await this.webRTCService.connectToNewUser(userId);
-            peerConnection.ontrack = event => {
-                const videoElement = this.createVideoElement(event.streams[0], false);
-                document.getElementById('videoGrid').appendChild(videoElement);
-            };
+            await this.webRTCService.connectToNewUser(userId);
         });
 
         this.socket.on('user-disconnected', (userId) => {
@@ -23,11 +19,7 @@ class App {
         });
 
         this.socket.on('offer', async (offer, senderId) => {
-            const peerConnection = await this.webRTCService.handleOffer(offer, senderId);
-            peerConnection.ontrack = event => {
-                const videoElement = this.createVideoElement(event.streams[0], false);
-                document.getElementById('videoGrid').appendChild(videoElement);
-            };
+            await this.webRTCService.handleOffer(offer, senderId);
         });
 
         this.socket.on('answer', async (answer, senderId) => {
@@ -37,21 +29,6 @@ class App {
         this.socket.on('ice-candidate', async (candidate, senderId) => {
             await this.webRTCService.handleIceCandidate(candidate, senderId);
         });
-    }
-
-    createVideoElement(stream, isLocal) {
-        const container = document.createElement('div');
-        container.className = 'video-container';
-        
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.autoplay = true;
-        if (isLocal) {
-            video.muted = true;
-        }
-        
-        container.appendChild(video);
-        return container;
     }
 
     async createMeeting() {
@@ -87,7 +64,7 @@ class App {
     async setupMediaAndJoinMeeting(meetingId) {
         try {
             const stream = await this.webRTCService.setupMediaStream();
-            const videoElement = this.createVideoElement(stream, true);
+            const videoElement = this.webRTCService.createVideoElement(stream, true);
             document.getElementById('videoGrid').appendChild(videoElement);
             this.socket.emit('join-room', meetingId);
             this.showMeetingControls();
