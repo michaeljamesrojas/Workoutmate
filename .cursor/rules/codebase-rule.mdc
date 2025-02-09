@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+---
+Make sure to follow DDD in all code changes or feature added or modified.
+Make sure everything is modularized
+Don't use relative imports
