@@ -1,7 +1,7 @@
 {
-  "name": "meeting-app",
+  "name": "workoutmate",
   "version": "1.0.0",
-  "description": "Simple meeting creation and joining application",
+  "description": "A fitness application for planning and joining workout sessions with your mate",
   "main": "src/index.js",
   "scripts": {
     "start": "nodemon src/index.js",

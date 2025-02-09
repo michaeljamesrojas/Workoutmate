@@ -1,12 +1,13 @@
-# Meeting App
+# Workoutmate
 
-A real-time meeting application built with Node.js, Express, and Socket.IO, following Domain-Driven Design principles.
+A fitness application for planning and joining workout sessions with your mate, built with Node.js, Express, and Socket.IO, following Domain-Driven Design principles.
 
 ## Features
 
 - User authentication (Local & Google OAuth)
-- Real-time meeting capabilities
-- Meeting creation and joining
+- Real-time workout session tracking
+- Workout planning and scheduling
+- Session joining with workout mates
 - Secure session management
 
 ## Prerequisites
@@ -20,7 +21,7 @@ A real-time meeting application built with Node.js, Express, and Socket.IO, foll
 
 ```bash
 git clone <repository-url>
-cd meeting-app
+cd workoutmate
 ```
 
 2. Install dependencies:
