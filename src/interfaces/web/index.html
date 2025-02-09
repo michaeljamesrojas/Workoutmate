@@ -21,6 +21,9 @@
         <div id="meetingControls">
             <button onclick="app.toggleVideo()" id="videoBtn">Turn Off Video</button>
             <button onclick="app.toggleAudio()" id="audioBtn">Mute Audio</button>
+            <select id="cameraSelect" onchange="app.switchCamera(this.value)" style="display: none;">
+                <option value="">Select Camera</option>
+            </select>
             <button onclick="app.leaveMeeting()" class="control-button">Leave Meeting</button>
         </div>
         <div id="videoGrid"></div>

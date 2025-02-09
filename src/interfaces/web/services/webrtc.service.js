@@ -4,6 +4,7 @@ class WebRTCService {
         this.peers = {};
         this.peerVideoElements = {};
         this.localStream = null;
+        this.currentCamera = null;
     }
 
     async setupMediaStream() {
@@ -131,6 +132,53 @@ class WebRTCService {
         Object.keys(this.peers).forEach(userId => {
             this.closePeerConnection(userId);
         });
+    }
+
+    async getAvailableCameras() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            return devices.filter(device => device.kind === 'videoinput');
+        } catch (error) {
+            console.error('Error getting cameras:', error);
+            return [];
+        }
+    }
+
+    async switchCamera(deviceId) {
+        try {
+            // Stop all tracks in the current stream
+            if (this.localStream) {
+                this.localStream.getTracks().forEach(track => track.stop());
+            }
+
+            // Get new stream with selected camera
+            this.localStream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: deviceId } },
+                audio: true
+            });
+
+            // Update local video
+            const localVideo = document.querySelector('#videoGrid video');
+            if (localVideo) {
+                localVideo.srcObject = this.localStream;
+            }
+
+            // Update all peer connections with the new stream
+            Object.values(this.peers).forEach(peer => {
+                const senders = peer.getSenders();
+                const videoSender = senders.find(sender => sender.track?.kind === 'video');
+                if (videoSender) {
+                    const videoTrack = this.localStream.getVideoTracks()[0];
+                    videoSender.replaceTrack(videoTrack);
+                }
+            });
+
+            this.currentCamera = deviceId;
+            return true;
+        } catch (error) {
+            console.error('Error switching camera:', error);
+            throw new Error('Failed to switch camera');
+        }
     }
 }
 

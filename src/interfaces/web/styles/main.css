@@ -108,4 +108,18 @@ video {
 
 .control-button:hover {
     background-color: #c82333;
+}
+
+#cameraSelect {
+    padding: 8px;
+    margin: 0 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: pointer;
+}
+
+#cameraSelect:focus {
+    outline: none;
+    border-color: #007bff;
 } 

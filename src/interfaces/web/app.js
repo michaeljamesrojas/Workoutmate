@@ -68,8 +68,37 @@ class App {
             document.getElementById('videoGrid').appendChild(videoElement);
             this.socket.emit('join-room', meetingId);
             this.showMeetingControls();
+            await this.populateCameraList();
         } catch (error) {
             this.showMessage(error.message, 'error');
+        }
+    }
+
+    async populateCameraList() {
+        const cameras = await this.webRTCService.getAvailableCameras();
+        const cameraSelect = document.getElementById('cameraSelect');
+        cameraSelect.innerHTML = '<option value="">Select Camera</option>';
+        
+        cameras.forEach(camera => {
+            const option = document.createElement('option');
+            option.value = camera.deviceId;
+            option.text = camera.label || `Camera ${cameraSelect.length}`;
+            cameraSelect.appendChild(option);
+        });
+
+        if (cameras.length > 1) {
+            cameraSelect.style.display = 'inline-block';
+        }
+    }
+
+    async switchCamera(deviceId) {
+        if (!deviceId) return;
+        
+        try {
+            await this.webRTCService.switchCamera(deviceId);
+            this.showMessage('Camera switched successfully', 'success');
+        } catch (error) {
+            this.showMessage('Failed to switch camera: ' + error.message, 'error');
         }
     }
 
