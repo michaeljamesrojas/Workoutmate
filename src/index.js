@@ -62,6 +62,9 @@ new WebSocketService(io, meetingService);
 // Serve public assets (images, css, etc.)
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
+// Serve auth-specific static assets (available to all)
+app.use('/static/auth', express.static(path.join(__dirname, 'interfaces/web/auth')));
+
 // Auth routes (must be before protected routes)
 app.use('/auth', createAuthRoutes(authService, authProvider));
 
@@ -70,11 +73,11 @@ app.use('/api', ensureAuth, createMeetingRoutes(meetingService));
 
 // Protected routes
 app.get('/dashboard', ensureAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'interfaces/web/index.html'));
+    res.sendFile(path.join(__dirname, 'interfaces/web/dashboard/pages/index.html'));
 });
 
 app.get('/meeting', ensureAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'interfaces/web/index.html'));
+    res.sendFile(path.join(__dirname, 'interfaces/web/dashboard/pages/index.html'));
 });
 
 // Public routes
@@ -90,7 +93,7 @@ app.get('/login', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect('/dashboard');
     } else {
-        res.sendFile(path.join(__dirname, 'interfaces/web/login.html'));
+        res.sendFile(path.join(__dirname, 'interfaces/web/auth/pages/login.html'));
     }
 });
 
@@ -98,7 +101,7 @@ app.get('/signup', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect('/dashboard');
     } else {
-        res.sendFile(path.join(__dirname, 'interfaces/web/signup.html'));
+        res.sendFile(path.join(__dirname, 'interfaces/web/auth/pages/signup.html'));
     }
 });
 
