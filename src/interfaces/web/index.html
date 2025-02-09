@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting App</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Meeting App</h1>
+        <div id="initialButtons" class="buttons">
+            <button onclick="app.createMeeting()">Create Meeting</button>
+            <button onclick="app.showJoinSection()">Join Meeting</button>
+        </div>
+        <div id="joinSection">
+            <input type="text" id="meetingCode" placeholder="Enter meeting code">
+            <button onclick="app.joinMeeting()">Join</button>
+        </div>
+        <div id="meetingControls">
+            <button onclick="app.toggleVideo()" id="videoBtn">Turn Off Video</button>
+            <button onclick="app.toggleAudio()" id="audioBtn">Mute Audio</button>
+            <button onclick="app.leaveMeeting()" class="control-button">Leave Meeting</button>
+        </div>
+        <div id="videoGrid"></div>
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html> 
