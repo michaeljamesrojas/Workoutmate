@@ -74,6 +74,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// Login page route
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Signup page route
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+});
+
 // Start server
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
