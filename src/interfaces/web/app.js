@@ -105,7 +105,7 @@ class App {
     showMeetingControls() {
         document.getElementById('initialButtons').style.display = 'none';
         document.getElementById('joinSection').style.display = 'none';
-        document.getElementById('meetingControls').style.display = 'block';
+        document.getElementById('sessionControls').style.display = 'block';
     }
 
     async toggleVideo() {

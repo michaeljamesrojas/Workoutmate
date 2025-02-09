@@ -70,7 +70,7 @@ app.use('/api', ensureAuth, createMeetingRoutes(meetingService));
 
 // Protected routes
 app.get('/dashboard', ensureAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'interfaces/web/dashboard.html'));
+    res.sendFile(path.join(__dirname, 'interfaces/web/index.html'));
 });
 
 app.get('/meeting', ensureAuth, (req, res) => {

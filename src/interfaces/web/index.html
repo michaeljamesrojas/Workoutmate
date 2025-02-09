@@ -6,41 +6,150 @@
     <title>Workoutmate</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/static/styles/main.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <div class="container">
-      <h1>Workoutmate</h1>
-      <div id="initialButtons" class="buttons">
-        <button onclick="app.createMeeting()">Create Meeting</button>
-        <button onclick="app.showJoinSection()">Join Meeting</button>
+  <body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <h1 class="text-xl font-semibold">Workoutmate</h1>
+          </div>
+          <div class="flex items-center">
+            <div class="flex items-center space-x-4">
+              <img id="userAvatar" class="h-8 w-8 rounded-full" src="" alt="" />
+              <span id="userName" class="text-gray-700"></span>
+              <button id="logoutBtn" class="text-gray-700 hover:text-gray-900">
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="joinSection">
-        <input type="text" id="meetingCode" placeholder="Enter meeting code" />
-        <button onclick="app.joinMeeting()">Join</button>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white shadow rounded-lg p-6">
+          <div class="container">
+            <h2 class="text-lg font-medium mb-4">Welcome to your Dashboard</h2>
+            <p class="text-gray-600 mb-6">
+              You are now logged in and can access all features of Workoutmate.
+            </p>
+            <div id="initialButtons" class="buttons space-y-4">
+              <button
+                onclick="app.createMeeting()"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Create Meeting
+              </button>
+              <button
+                onclick="app.showJoinSection()"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Join Meeting
+              </button>
+            </div>
+            <div id="joinSection" class="space-y-4 mt-4" style="display: none">
+              <input
+                type="text"
+                id="meetingCode"
+                placeholder="Enter meeting code"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              />
+              <button
+                onclick="app.joinMeeting()"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Join
+              </button>
+            </div>
+            <div
+              id="sessionControls"
+              class="space-y-4 mt-4"
+              style="display: none"
+            >
+              <button
+                onclick="app.toggleVideo().catch(error => app.showMessage(error.message, 'error'))"
+                id="videoBtn"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Turn Off Video
+              </button>
+              <button
+                onclick="app.toggleAudio()"
+                id="audioBtn"
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Mute Audio
+              </button>
+              <select
+                id="cameraSelect"
+                onchange="app.switchCamera(this.value)"
+                style="display: none"
+                class="w-full rounded-md border-gray-300 shadow-sm"
+              >
+                <option value="">Select Camera</option>
+              </select>
+              <button
+                onclick="app.leaveSession()"
+                class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+              >
+                Leave Session
+              </button>
+            </div>
+            <div id="videoGrid" class="mt-4"></div>
+            <div id="message" class="message mt-4" style="display: none"></div>
+          </div>
+        </div>
       </div>
-      <div id="sessionControls">
-        <button
-          onclick="app.toggleVideo().catch(error => app.showMessage(error.message, 'error'))"
-          id="videoBtn"
-        >
-          Turn Off Video
-        </button>
-        <button onclick="app.toggleAudio()" id="audioBtn">Mute Audio</button>
-        <select
-          id="cameraSelect"
-          onchange="app.switchCamera(this.value)"
-          style="display: none"
-        >
-          <option value="">Select Camera</option>
-        </select>
-        <button onclick="app.leaveSession()" class="control-button">
-          Leave Session
-        </button>
-      </div>
-      <div id="videoGrid"></div>
-      <div id="message" class="message" style="display: none"></div>
-    </div>
+    </main>
 
     <script type="module" src="/static/app.js"></script>
+    <script>
+      // Fetch user data when the page loads
+      async function fetchUserData() {
+        try {
+          const response = await fetch("/auth/current-user");
+          const data = await response.json();
+
+          if (response.ok) {
+            document.getElementById("userName").textContent = data.user.name;
+            if (data.user.profilePicture) {
+              document.getElementById("userAvatar").src =
+                data.user.profilePicture;
+            } else {
+              document.getElementById("userAvatar").src =
+                "https://www.gravatar.com/avatar/?d=mp";
+            }
+          } else {
+            window.location.href = "/login";
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          window.location.href = "/login";
+        }
+      }
+
+      // Handle logout
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async () => {
+          try {
+            const response = await fetch("/auth/logout");
+            if (response.ok) {
+              window.location.href = "/login";
+            }
+          } catch (error) {
+            console.error("Error logging out:", error);
+          }
+        });
+
+      // Load user data when the page loads
+      fetchUserData();
+    </script>
   </body>
 </html>
