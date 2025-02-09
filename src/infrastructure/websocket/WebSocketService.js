@@ -1,7 +1,8 @@
 class WebSocketService {
-    constructor(io, meetingService) {
+    constructor(io, meetingService, chatService) {
         this.io = io;
         this.meetingService = meetingService;
+        this.chatService = chatService;
         this.setupSocketHandlers();
     }
 
@@ -14,9 +15,31 @@ class WebSocketService {
                 this.meetingService.addParticipant(roomId, socket.id);
                 socket.to(roomId).emit('user-connected', socket.id);
                 
+                // Initialize chat for the meeting
+                this.chatService.initializeChat(roomId).catch(console.error);
+
                 socket.on('disconnect', () => {
                     this.meetingService.removeParticipant(roomId, socket.id);
                     socket.to(roomId).emit('user-disconnected', socket.id);
+                });
+
+                // Chat events
+                socket.on('chat-message', async (content) => {
+                    try {
+                        const message = await this.chatService.sendMessage(roomId, socket.id, content);
+                        this.io.to(roomId).emit('chat-message', message.toJSON());
+                    } catch (error) {
+                        socket.emit('chat-error', error.message);
+                    }
+                });
+
+                socket.on('get-chat-history', async (before) => {
+                    try {
+                        const messages = await this.chatService.getMessages(roomId, 50, new Date(before));
+                        socket.emit('chat-history', messages.map(m => m.toJSON()));
+                    } catch (error) {
+                        socket.emit('chat-error', error.message);
+                    }
                 });
 
                 // WebRTC signaling
