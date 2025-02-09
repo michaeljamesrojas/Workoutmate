@@ -7,6 +7,8 @@ class App {
         this.webRTCService = new WebRTCService(this.socket);
         this.meetingService = new MeetingService();
         this.setupSocketHandlers();
+        this.handleUrlMeeting();
+        this.handleUrlErrors();
     }
 
     setupSocketHandlers() {
@@ -35,9 +37,33 @@ class App {
         try {
             const meetingId = await this.meetingService.createMeeting();
             await this.setupMediaAndJoinMeeting(meetingId);
-            this.showMessage(`Meeting created! Your meeting code is: ${meetingId}`, 'success');
+            window.history.pushState({}, '', `/meeting/${meetingId}`);
+            this.showMessage(`Meeting created! Share this URL to invite others`, 'success');
         } catch (error) {
             this.showMessage(error.message, 'error');
+        }
+    }
+
+    handleUrlMeeting() {
+        const path = window.location.pathname;
+        const meetingMatch = path.match(/^\/meeting\/([^\/]+)/);
+        
+        if (meetingMatch) {
+            const meetingId = meetingMatch[1];
+            this.setupMediaAndJoinMeeting(meetingId).catch(error => {
+                this.showMessage(error.message, 'error');
+            });
+        }
+    }
+
+    handleUrlErrors() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error === 'meeting-not-found') {
+            this.showMessage('The meeting you tried to join does not exist.', 'error');
+        } else if (error === 'invalid-meeting') {
+            this.showMessage('Unable to join the meeting. Please try again or create a new meeting.', 'error');
         }
     }
 
@@ -135,4 +161,13 @@ class App {
 // Initialize the app when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
-}); 
+});
+
+// Add route handler for direct meeting access
+if (typeof express !== 'undefined') {
+    const app = express();
+    
+    app.get('/meeting/:id', (req, res) => {
+        res.sendFile(path.join(__dirname, 'dashboard', 'pages', 'index.html'));
+    });
+} 

@@ -76,8 +76,17 @@ app.get('/dashboard', ensureAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'interfaces/web/dashboard/pages/index.html'));
 });
 
-app.get('/meeting', ensureAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'interfaces/web/dashboard/pages/index.html'));
+app.get('/meeting/:id', ensureAuth, async (req, res) => {
+    try {
+        const meeting = await meetingService.getMeeting(req.params.id);
+        if (!meeting) {
+            res.redirect('/dashboard?error=meeting-not-found');
+            return;
+        }
+        res.sendFile(path.join(__dirname, 'interfaces/web/dashboard/pages/index.html'));
+    } catch (error) {
+        res.redirect('/dashboard?error=invalid-meeting');
+    }
 });
 
 // Public routes
