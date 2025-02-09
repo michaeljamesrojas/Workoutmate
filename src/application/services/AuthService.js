@@ -1,4 +1,10 @@
 const User = require('@domain/entities/User');
+const {
+    UserAlreadyExistsException,
+    InvalidCredentialsException
+} = require('@domain/shared/exceptions/DomainException');
+const { UserLoggedIn } = require('@domain/events/UserEvents');
+const DomainEventPublisher = require('@domain/events/DomainEventPublisher');
 
 class AuthService {
     constructor(userRepository) {
@@ -8,7 +14,7 @@ class AuthService {
     async registerUser(email, password, name) {
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
-            throw new Error('Email already registered');
+            throw new UserAlreadyExistsException(email);
         }
 
         const user = User.createNew(email, name);
@@ -20,13 +26,18 @@ class AuthService {
     async authenticateUser(email, password) {
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
-            throw new Error('Invalid email or password');
+            throw new InvalidCredentialsException();
         }
 
         const isValid = await user.comparePassword(password);
         if (!isValid) {
-            throw new Error('Invalid email or password');
+            throw new InvalidCredentialsException();
         }
+
+        // Publish login event
+        DomainEventPublisher.getInstance().publish(
+            new UserLoggedIn(user.id, 'local')
+        );
 
         return user;
     }
@@ -55,6 +66,11 @@ class AuthService {
                 return this.userRepository.save(newUser);
             }
         }
+
+        // Publish login event
+        DomainEventPublisher.getInstance().publish(
+            new UserLoggedIn(user.id, 'google')
+        );
 
         return user;
     }

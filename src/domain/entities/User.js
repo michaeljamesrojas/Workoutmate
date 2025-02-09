@@ -1,4 +1,7 @@
 const bcrypt = require('bcryptjs');
+const Email = require('@domain/valueObjects/Email');
+const DomainEventPublisher = require('@domain/events/DomainEventPublisher');
+const { UserRegistered, GoogleAccountLinked, ProfileUpdated } = require('@domain/events/UserEvents');
 
 class User {
     #id;
@@ -11,7 +14,7 @@ class User {
 
     constructor(id, email, name, password = null, googleId = null, profilePicture = null) {
         this.#id = id;
-        this.#email = email;
+        this.#email = new Email(email);
         this.#name = name;
         this.#password = password;
         this.#googleId = googleId;
@@ -21,7 +24,7 @@ class User {
 
     // Getters
     get id() { return this.#id; }
-    get email() { return this.#email; }
+    get email() { return this.#email.value; }
     get name() { return this.#name; }
     get googleId() { return this.#googleId; }
     get profilePicture() { return this.#profilePicture; }
@@ -46,17 +49,36 @@ class User {
         }
         this.#googleId = googleId;
         this.#profilePicture = profilePicture;
+
+        // Publish domain event
+        DomainEventPublisher.getInstance().publish(
+            new GoogleAccountLinked(this.#id, googleId)
+        );
     }
 
     updateProfile(name, profilePicture) {
-        if (name) this.#name = name;
-        if (profilePicture) this.#profilePicture = profilePicture;
+        const changes = {};
+        if (name && name !== this.#name) {
+            this.#name = name;
+            changes.name = name;
+        }
+        if (profilePicture && profilePicture !== this.#profilePicture) {
+            this.#profilePicture = profilePicture;
+            changes.profilePicture = profilePicture;
+        }
+
+        if (Object.keys(changes).length > 0) {
+            // Publish domain event
+            DomainEventPublisher.getInstance().publish(
+                new ProfileUpdated(this.#id, changes)
+            );
+        }
     }
 
     toJSON() {
         return {
             id: this.#id,
-            email: this.#email,
+            email: this.#email.value,
             name: this.#name,
             profilePicture: this.#profilePicture,
             createdAt: this.#createdAt
@@ -65,11 +87,25 @@ class User {
 
     // Factory methods
     static createNew(email, name) {
-        return new User(null, email, name);
+        const user = new User(null, email, name);
+        
+        // Publish domain event
+        DomainEventPublisher.getInstance().publish(
+            new UserRegistered(user.id, email, name, 'local')
+        );
+
+        return user;
     }
 
     static createFromGoogle(email, name, googleId, profilePicture) {
-        return new User(null, email, name, null, googleId, profilePicture);
+        const user = new User(null, email, name, null, googleId, profilePicture);
+
+        // Publish domain event
+        DomainEventPublisher.getInstance().publish(
+            new UserRegistered(user.id, email, name, 'google')
+        );
+
+        return user;
     }
 }
 
