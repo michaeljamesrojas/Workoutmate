@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #joinSection {
+            display: none;
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Meeting App</h1>
+        <div class="buttons">
+            <button onclick="createMeeting()">Create Meeting</button>
+            <button onclick="showJoinSection()">Join Meeting</button>
+        </div>
+        <div id="joinSection">
+            <input type="text" id="meetingCode" placeholder="Enter meeting code">
+            <button onclick="joinMeeting()">Join</button>
+        </div>
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function createMeeting() {
+            try {
+                const response = await fetch('/api/meetings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showMessage(`Meeting created! Your meeting code is: ${data.meetingId}`, 'success');
+            } catch (error) {
+                showMessage('Error creating meeting', 'error');
+            }
+        }
+
+        function showJoinSection() {
+            document.getElementById('joinSection').style.display = 'block';
+        }
+
+        async function joinMeeting() {
+            const meetingCode = document.getElementById('meetingCode').value.trim();
+            if (!meetingCode) {
+                showMessage('Please enter a meeting code', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/meetings/${meetingCode}`);
+                if (!response.ok) {
+                    throw new Error('Meeting not found');
+                }
+                const data = await response.json();
+                showMessage(`Successfully joined meeting ${data.id}`, 'success');
+            } catch (error) {
+                showMessage('Invalid meeting code', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 
