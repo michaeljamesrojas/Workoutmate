@@ -19,7 +19,7 @@
             <button onclick="app.joinMeeting()">Join</button>
         </div>
         <div id="meetingControls">
-            <button onclick="app.toggleVideo()" id="videoBtn">Turn Off Video</button>
+            <button onclick="app.toggleVideo().catch(error => app.showMessage(error.message, 'error'))" id="videoBtn">Turn Off Video</button>
             <button onclick="app.toggleAudio()" id="audioBtn">Mute Audio</button>
             <select id="cameraSelect" onchange="app.switchCamera(this.value)" style="display: none;">
                 <option value="">Select Camera</option>

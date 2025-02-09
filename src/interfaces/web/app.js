@@ -108,8 +108,8 @@ class App {
         document.getElementById('meetingControls').style.display = 'block';
     }
 
-    toggleVideo() {
-        const isEnabled = this.webRTCService.toggleVideo();
+    async toggleVideo() {
+        const isEnabled = await this.webRTCService.toggleVideo();
         document.getElementById('videoBtn').textContent = isEnabled ? 'Turn Off Video' : 'Turn On Video';
     }
 

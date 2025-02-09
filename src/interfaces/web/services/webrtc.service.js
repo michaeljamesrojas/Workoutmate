@@ -107,11 +107,51 @@ class WebRTCService {
         }
     }
 
-    toggleVideo() {
+    async toggleVideo() {
         const videoTrack = this.localStream.getVideoTracks()[0];
         if (videoTrack) {
-            videoTrack.enabled = !videoTrack.enabled;
-            return videoTrack.enabled;
+            if (videoTrack.enabled) {
+                // If video is currently enabled, stop it completely
+                videoTrack.stop();
+                videoTrack.enabled = false;
+                return false;
+            } else {
+                // If video is currently disabled, start a new video track
+                try {
+                    const newStream = await navigator.mediaDevices.getUserMedia({
+                        video: this.currentCamera ? { deviceId: { exact: this.currentCamera } } : true,
+                        audio: false
+                    });
+                    
+                    const newVideoTrack = newStream.getVideoTracks()[0];
+                    const oldVideoTrack = this.localStream.getVideoTracks()[0];
+                    
+                    // Replace the video track in the local stream
+                    this.localStream.removeTrack(oldVideoTrack);
+                    this.localStream.addTrack(newVideoTrack);
+                    
+                    // Update the video track for all peer connections
+                    Object.values(this.peers).forEach(peer => {
+                        const senders = peer.getSenders();
+                        const videoSender = senders.find(sender => sender.track?.kind === 'video');
+                        if (videoSender) {
+                            videoSender.replaceTrack(newVideoTrack);
+                        }
+                    });
+                    
+                    // Update local video element
+                    const localVideo = document.querySelector('#videoGrid video');
+                    if (localVideo) {
+                        localVideo.srcObject = this.localStream;
+                    }
+                    
+                    newVideoTrack.enabled = true;
+                    return true;
+                } catch (error) {
+                    console.error('Error restarting video:', error);
+                    return false;
+                }
+            }
         }
         return false;
     }
