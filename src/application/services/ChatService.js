@@ -5,42 +5,46 @@ class ChatService {
     constructor(chatRepository, meetingService) {
         this.chatRepository = chatRepository;
         this.meetingService = meetingService;
+        // In-memory storage for chat messages
+        this.chatRooms = new Map();
     }
 
-    async initializeChat(meetingId) {
-        const meeting = await this.meetingService.getMeeting(meetingId);
-        if (!meeting) {
-            throw new Error('Meeting not found');
+    async initializeChat(roomId) {
+        if (!this.chatRooms.has(roomId)) {
+            this.chatRooms.set(roomId, []);
         }
-        
-        const chat = new Chat(meetingId);
-        await this.chatRepository.createChat(meetingId);
-        return chat;
     }
 
-    async sendMessage(meetingId, senderId, content) {
-        const chat = await this.chatRepository.getChat(meetingId);
-        if (!chat) {
-            throw new Error('Chat not found');
-        }
+    async sendMessage(roomId, senderId, content) {
+        const message = {
+            id: Date.now().toString(),
+            roomId,
+            senderId,
+            content,
+            timestamp: new Date(),
+            toJSON() {
+                return {
+                    id: this.id,
+                    senderId: this.senderId,
+                    content: this.content,
+                    timestamp: this.timestamp
+                };
+            }
+        };
 
-        const meeting = await this.meetingService.getMeeting(meetingId);
-        if (!meeting.hasParticipant(senderId)) {
-            throw new Error('User is not a participant in this meeting');
-        }
+        const room = this.chatRooms.get(roomId) || [];
+        room.push(message);
+        this.chatRooms.set(roomId, room);
 
-        const message = chat.addMessage(uuidv4(), senderId, content);
-        await this.chatRepository.saveMessage(message);
         return message;
     }
 
-    async getMessages(meetingId, limit = 50, before = new Date()) {
-        const chat = await this.chatRepository.getChat(meetingId);
-        if (!chat) {
-            throw new Error('Chat not found');
-        }
-
-        return await this.chatRepository.getMessages(meetingId, limit, before);
+    async getMessages(roomId, limit = 50, before = new Date()) {
+        const room = this.chatRooms.get(roomId) || [];
+        return room
+            .filter(msg => msg.timestamp < before)
+            .slice(-limit)
+            .reverse();
     }
 
     async getMessage(messageId) {

@@ -16,6 +16,7 @@ const WebSocketService = require('@infrastructure/websocket/WebSocketService');
 // Application Services
 const MeetingService = require('@application/services/MeetingService');
 const AuthService = require('@application/services/AuthService');
+const ChatService = require('@application/services/ChatService');
 
 // Interface Routes
 const createMeetingRoutes = require('@interfaces/http/routes/meetingRoutes');
@@ -49,6 +50,7 @@ const userRepository = new InMemoryUserRepository();
 // Initialize services
 const meetingService = new MeetingService(meetingRepository);
 const authService = new AuthService(userRepository);
+const chatService = new ChatService();
 
 // Initialize authentication provider
 const authProvider = new AuthenticationProvider(authService);
@@ -57,7 +59,7 @@ app.use(initialize);
 app.use(passportSession);
 
 // Initialize WebSocket service
-new WebSocketService(io, meetingService);
+new WebSocketService(io, meetingService, chatService);
 
 // Serve public assets (images, css, etc.)
 app.use('/assets', express.static(path.join(__dirname, 'public')));
