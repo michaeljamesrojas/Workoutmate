@@ -57,6 +57,11 @@ class WebRTCService {
         video.autoplay = true;
         if (isLocal) {
             video.muted = true;
+            // Keep mirrored view for local video (selfie view)
+            video.style.transform = 'scaleX(-1)';
+        } else {
+            // No mirroring for remote participants
+            video.style.transform = 'scaleX(1)';
         }
         
         container.appendChild(video);

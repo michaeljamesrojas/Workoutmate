@@ -145,9 +145,20 @@ class App {
     }
 
     leaveMeeting() {
+        // Clean up WebRTC connections and media
         this.webRTCService.cleanup();
+        // Disconnect socket
         this.socket.disconnect();
-        window.location.reload();
+        // Clear video grid
+        const videoGrid = document.getElementById('videoGrid');
+        while (videoGrid.firstChild) {
+            videoGrid.removeChild(videoGrid.firstChild);
+        }
+        // Hide meeting controls and show initial buttons
+        document.getElementById('sessionControls').style.display = 'none';
+        document.getElementById('initialButtons').style.display = 'block';
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
     }
 
     showMessage(text, type) {
